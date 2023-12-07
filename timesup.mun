@@ -1,0 +1,217 @@
+list<string> get_words() {
+    string path = resolve_path(get_location(), "words.txt");
+    list<string> words = split(read_file(path),",");
+    return words;
+}
+
+
+void set_words(list<string> words) {
+    string path = resolve_path(get_location(), "words.txt");
+    write_file(path, join(words, ","));
+}
+
+list<int> get_points() {
+    string path = resolve_path(get_location(), "points.txt");
+    list<string> content = split(read_file(path), ",");
+    list<int> points = convert_to_int(content);
+    return points;
+}
+
+void set_points(list<int> points) {
+    string path = resolve_path(get_location(), "points.txt");
+    write_file(path, join(convert_to_str(points), ","));
+}
+
+
+list<string> convert_to_str(list<int> a) {
+    list<string> b = [];
+    for(int c in a) {
+        b = b + (c-> string);
+    }
+    return b;
+}
+
+list<int> convert_to_int(list<string> a) {
+    list<int> b = [];
+    for(string c in a) {
+        b = b + (c -> int);
+    }
+    return b;
+}
+
+
+boolean is_in(? element, ? iterator) {
+    for (? p in iterator) {
+        if (p == element) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+void add_word(string word) {
+    list<string> current_words = get_words();
+
+    if(! is_in(word, current_words)) {
+        current_words += word;
+        set_words(current_words);
+    }
+
+        
+}
+
+void remove_word(string word) {
+    list<string> current_words = get_words();
+
+    if(is_in(word, current_words)) {
+        current_words -= word;
+        set_words(current_words);
+    }
+}
+
+
+
+int remaining_words() {
+    return length(get_words()) - length(found_words);
+}
+
+
+string x_mots_restants() {
+    return (length(get_words()) - length(found_words)) + " mots restants";
+}
+
+
+void switch_teams(? app, ? team_text) {
+    if(team == 1) {
+        team = 0;
+    } else {
+        team = 1;
+    }
+    set_text(app, team_text, "Equipe " + (team+1));
+}
+
+
+void add_point_to(int team, int nb_points) {
+    list<int> points = get_points();
+    int current_points = points[team];
+    current_points += nb_points;
+    points[team] = current_points;
+    set_points(points);
+}
+
+
+
+
+void next(? app, ? button, ? remaining, boolean found) {
+
+    if(length(found_words) < length(get_words())) {
+        if(found) {
+            found_words += remaining_words[0];
+        } else {
+            not_found_words += remaining_words[0];
+        }
+        if(length(remaining_words) > 1) {
+            remaining_words -=[0];
+        } else {
+            remaining_words = shuffle(not_found_words);
+        }
+        set_button_text(app, button, remaining_words[0]);
+        set_text(app, remaining, x_mots_restants());
+    } else {
+        set_button_text(app, button, "Terminé");
+        set_text(app, remaining, "Terminé");
+        
+    }
+
+}
+
+
+void hide(? app, ? button) {
+    string hidden_string = "Mot Caché!";
+    
+    if(get_button_text(app, button) == "Mot Caché!") {
+        if(length(found_words) >= length(get_words())) {
+            set_button_text(app, button, "Terminé");
+        } else {
+            remaining_words = shuffle(remaining_words);
+            set_button_text(app, button, remaining_words[0]);
+        }
+    } else {
+        set_button_text(app, button, hidden_string);
+    }
+}
+
+
+
+void trouve(? app, ? button, ? remaining, ? points_text) {
+    next(app, button, remaining, true);
+    add_point_to(team, 1);
+    list<int> points = get_points();
+
+    list<string> str_points = [points[0] -> string, points[1] -> string];
+    if(points[0]< 10) {
+        str_points[0] = "0" + str_points[0];
+    }
+    if(points[1]< 10) {
+        str_points[1] = "0" + str_points[1];
+    }
+
+
+    set_text(app, points_text, "1: " + str_points[0] + " | 2: " + str_points[1]);
+    
+}
+
+
+
+
+
+
+void passe(? app, ? button, ? remaining) {
+    next(app, button, remaining, false);
+}
+
+void play() {
+    ? app = create_app("Times Up");
+
+    ? team_text = add_text(app, "Equipe 1");
+    list<string> str_points = [get_points()[0] -> string, get_points()[1] -> string];
+    if(points[0]< 10) {
+        str_points[0] = "0" + str_points[0];
+    }
+    if(points[1]< 10) {
+        str_points[1] = "0" + str_points[1];
+    }
+
+    ? points_text = add_text(app, "1: " + str_points[0] + " | 2: " + str_points[1]);
+    ? button = add_button(app, remaining_words[0], "primary");
+    ? remaining = add_text(app, x_mots_restants());
+
+
+
+    add_binding(app, "n", "trouve", "app,button,remaining,points_text", "Trouvé !");
+    add_binding(app, "space", "passe", "app,button,remaining", "Passer");
+    add_binding(app, "h", "hide", "app,button", "Cacher");
+    add_binding(app, "s", "switch_teams", "app,team_text", "Changer d'équipe");
+
+
+
+    run_app(app);    
+}
+
+
+void main() {
+    list<int> points = [0, 0];
+    set_points(points); 
+    play();
+}
+
+
+list<string> remaining_words = get_words();
+list<string> found_words = [];
+list<string> not_found_words = [];
+
+
+int team = 0;
+
+main();

@@ -1,0 +1,1 @@
+Chien,Chat,Cheval,Vache,Cochon,Mouton,Lapin,Poule,Canard,Oie,Renard,Cerf,Ours,Loup,Écureuil,Hérisson,Baleine,Requin,Dauphin,Tortue,Grenouille,Serpent,Lézard,Crocodile,Éléphant,Girafe,Zèbre,Rhinocéros,Hippopotame,Lion
