@@ -1,0 +1,200 @@
+import <textual:lib>;
+import <random:py> as rd;
+
+
+list<string> get_words() {
+    list<string> words = split(read("words.txt"),",");
+    return words;
+}
+
+
+void set_words(list words) {
+    write("words.txt", join(words, ","));
+}
+
+
+
+string format_point(int point) {
+    string formatted = point -> string;
+    if(point < 10) {
+        formatted = "0" + point;
+    }
+    return formatted;
+}
+
+
+void display_points() {
+    string points_team_1 = format_point(points[0]);
+    string points_team_2 = format_point(points[1]);
+    string t1 = "T1: " + points_team_1;
+    string t2 = "T2: " + points_team_2;
+    string full_string = t1 + " | " + t2;
+    if(current_team == 1) {
+        full_string = t2 + " | " + t1;
+    }
+    label_set_text(app, points_id, full_string);
+}
+
+
+
+void display_word(string word) {
+    if(!hidden) {
+        button_set_text(app, current_word_id, word);
+    } else {
+        button_set_text(app, current_word_id, "Caché !");
+    }
+}
+
+
+void display_words_remaining(int nb_remaining) {
+    label_set_text(app, remaining_id, nb_remaining -> string + " Mots restants");
+}
+
+
+void display_current() {
+    if(is_done()) {
+        display_done();
+    } else {
+        display_points();
+        display_word(current_word);
+        display_words_remaining(length(remaining_words) + length(not_found_words));
+    }
+}
+
+void display_done() {
+    display_points();
+    display_word("Terminé !");
+    display_words_remaining(0);
+}
+
+
+boolean is_done() {
+    return length(found_words) >= length(get_words());
+}
+
+
+
+list shuffle_list(list to_shuffle) {
+    list new = [];
+    until (length(to_shuffle) <= 0) {
+        int index = rd_randint(0 -> py_int, (length(to_shuffle) - 1) -> py_int);
+        new += to_shuffle[index];
+        to_shuffle -= to_shuffle[index];
+    }
+    return new;
+    
+}
+
+string pick_a_word() {
+    string word = "";
+    remaining_words = shuffle_list(remaining_words);
+    if(length(remaining_words) > 0) {
+        word = remaining_words[0];
+    }
+    return word;
+}
+
+void find_word(string word) {
+    found_words += word;
+    remaining_words -= word;
+}
+
+void pass_word(string word) {
+    not_found_words += word;
+    remaining_words -= word;
+    if(length(remaining_words) == 0) {
+        re_play_not_found();
+    }
+}
+
+void re_play_not_found() {
+    remaining_words += not_found_words;
+    not_found_words = [];
+}
+
+
+void trouver() {
+    app_log("Trouvé !");
+    if(!is_done()) {
+        find_word(current_word);
+        current_word = pick_a_word();
+        add_points_to_current_team(1);
+    }
+    display_current();
+}
+
+void passer() {
+    app_log("Passé !");
+    pass_word(current_word);
+    current_word = pick_a_word();
+    display_current();
+}
+
+void switch_team() {
+    if(current_team == 0) {
+        current_team = 1;
+    } else {
+        current_team = 0;
+    }
+}
+
+void toggle_hidden() {
+    hidden = !hidden;
+}
+
+void add_points_to_current_team(int points_to_add) {
+    points[current_team] = points[current_team]+ points_to_add;
+}
+
+list<int> points = [0, 0];
+list<string> remaining_words = get_words();
+list<string> found_words = [];
+list<string> not_found_words = [];
+
+int current_team = 0;
+string current_word = pick_a_word();
+boolean hidden = false;
+
+
+? app = create_app("Timesup");
+
+? points_id = label_create(app, "Points of the teams");
+? current_word_id = button_create(app, "Current word");
+? remaining_id = label_create(app, "Words remaining");
+
+
+? trouver_clicked = add_binding(app, "n", "Trouvé !");
+? passer_clicked = add_binding(app, "space", "Passer");
+? cacher_clicked = add_binding(app, "h", "Cacher");
+? switch_clicked = add_binding(app, "s", "Changer d'équipe");
+
+
+watch(trouver_clicked) {
+    if(!hidden) {
+       trouver();
+    }
+}
+
+watch(passer_clicked) {
+    if(!hidden) {
+        passer();
+    }
+}
+
+watch(cacher_clicked) {
+    app_log("Caché !");
+    toggle_hidden();
+    if(!hidden) {
+        passer();
+    }
+    display_current();
+}
+
+watch(switch_clicked) {
+    app_log("Switché !");
+    switch_team();
+    display_current();
+}
+
+display_current();
+run_app(app);

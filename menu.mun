@@ -1,0 +1,182 @@
+import <requests:lib> as requests;
+import <rich:py> as r;
+
+void rprint(? arg) {
+    r_print(arg -> py_str);
+}
+
+list<string> get_words() {
+    list<string> words = split(read("words.txt"),",");
+    return words;
+}
+
+
+void set_words(list words) {
+    write("words.txt", join(words, ","));
+}
+
+
+
+
+boolean is_in(? element, ? iterator) {
+    for (? p in iterator) {
+        if (p == element) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+void add_word(string word) {
+    list<string> current_words = get_words();
+
+    if(! is_in(word, current_words)) {
+        current_words += word;
+        set_words(current_words);
+    }
+
+        
+}
+
+void remove_word(string word) {
+    list<string> current_words = get_words();
+
+    if(is_in(word, current_words)) {
+        current_words = current_words - word;
+        set_words(current_words);
+    }
+}
+
+
+
+? get_new_words(int categorie, int nb_mots) {
+    string url = "https://trouve-mot.fr/api/categorie/" + categorie + "/" + nb_mots;
+    ?response = requests_get(url);
+    list<string> words = [];
+
+    for(dict element in response) {
+        words = words + ((element["name"])->string);
+    }
+
+    return words;
+}
+
+
+boolean is_in(? element, ? iterator) {
+    for (? p in iterator) {
+        if (p == element) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+void add_word(string word) {
+    list<string> current_words = get_words();
+
+    if(! is_in(word, current_words)) {
+        current_words += word;
+        set_words(current_words);
+    }
+
+        
+}
+
+void remove_word(string word) {
+    list<string> current_words = get_words();
+
+    if(is_in(word, current_words)) {
+        current_words = current_words - word;
+        set_words(current_words);
+    }
+}
+
+
+void actions() {
+    list<string> words = get_words();
+    rprint("There are [blue]" + length(words) + "[/blue] words in the bank" );
+    rprint("");
+    rprint("You can:");
+    rprint("    - [yellow]play[/yellow] the game");
+    rprint("    - [blue]read[/blue] all words");
+    rprint("    - [blue]add[/blue] a word");
+    rprint("    - [blue]remove[/blue] a word");
+    rprint("    - [blue]change[/blue] every word");
+    rprint("    - [red]exit[/red] the program");
+    rprint("");
+    string action = input("Action -> ");
+
+
+    if(action == "play") {
+        action = "exit";
+        import <timesup.mun>;
+    }
+
+    if(action == "read") {
+        for(string w in get_words()) {
+            rprint("- [green]" + w + "[/green]");
+        }
+        rprint("");
+    }
+
+    if(action == "add") {
+
+        string sure = "n";
+        while((sure != "Y") & (sure != "y")) {
+            string word_to_add = input("What word would you like to add? -> ");
+            rprint("Are you sure you want to add [blue]" + word_to_add + "[/blue]?");
+            sure = input("(Y/n) -> ");
+        }
+        
+        add_word(word_to_add);
+
+    }
+
+    if(action == "remove") {
+
+        string sure = "n";
+        while((sure != "Y") & (sure != "y")) {
+            string word_to_remove = input("What word would you like to remove? -> ");
+            rprint("Are you sure you want to remove [blue]" + word_to_remove + "[/blue]?");
+            sure = input("(Y/n) -> ");
+        }
+        
+        remove_word(word_to_remove);
+
+    }
+
+    if(action == "change") {
+        string sure1 = "n";
+        while((sure1 != "Y") & (sure1 != "y")) {
+            string category = input("What category would you like? -> ");
+            rprint("Are you sure you want the category [blue]" + category + "[/blue]?");
+            sure1 = input("(Y/n) -> ");
+        }
+        string sure2 = "n";
+        while((sure2 != "Y") & (sure2 != "y")) {
+            string nb_words = input("How many words? -> ");
+            rprint("Are you sure you want [blue]" + nb_words + " [/blue]words?");
+            sure2 = input("(Y/n) -> ");
+        }
+
+        list<string> new_words = get_new_words(category -> int, nb_words -> int);
+        set_words(new_words);
+    }
+
+
+
+
+
+
+
+
+
+    if(action != "exit") {
+        actions();
+    }
+    
+}
+
+actions();
