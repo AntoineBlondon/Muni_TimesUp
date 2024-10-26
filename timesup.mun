@@ -2,6 +2,11 @@ import <textual:lib>;
 import <random:py> as rd;
 
 
+##############################
+#########  File I/O  #########
+##############################
+
+
 list<string> get_words() {
     list<string> words = split(read("words.txt"),",");
     return words;
@@ -13,6 +18,10 @@ void set_words(list words) {
 }
 
 
+
+##############################
+#########  Display  ##########
+##############################
 
 string format_point(int point) {
     string formatted = point -> string;
@@ -66,6 +75,13 @@ void display_done() {
     display_word("Terminé !");
     display_words_remaining(0);
 }
+
+
+
+##############################
+########  Game Logic  ########
+##############################
+
 
 
 boolean is_done() {
@@ -146,6 +162,17 @@ void add_points_to_current_team(int points_to_add) {
     points[current_team] = points[current_team]+ points_to_add;
 }
 
+
+
+
+
+
+##############################
+#######  Main program  #######
+##############################
+
+
+
 list<int> points = [0, 0];
 list<string> remaining_words = get_words();
 list<string> found_words = [];
@@ -167,6 +194,8 @@ boolean hidden = false;
 ? passer_clicked = add_binding(app, "space", "Passer");
 ? cacher_clicked = add_binding(app, "h", "Cacher");
 ? switch_clicked = add_binding(app, "s", "Changer d'équipe");
+
+
 
 
 watch(trouver_clicked) {
